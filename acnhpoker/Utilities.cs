@@ -11,9 +11,8 @@ namespace acnhpoker
 {
     class Utilities
     {
-        UInt32 ItemSlotBase = 0xAC3B90C0;
-        UInt32 ItemSlot21Base = 0xAC3B9008;
-
+        UInt32 ItemSlotBase = 0xAC4723D0;
+        UInt32 ItemSlot21Base = 0xAC472318;
         public Utilities()
         {
         }
@@ -25,10 +24,10 @@ namespace acnhpoker
 
         public string GetItemSlotAddress(int slot)
         {
-            if(slot <= 20)
+            if (slot <= 20)
             {
                 return "0x" + (ItemSlotBase + ((Clamp(slot, 1, 20) - 1) * 0x8)).ToString("X");
-            } 
+            }
             else
             {
                 return "0x" + (ItemSlot21Base + ((Clamp(slot, 21, 40) - 21) * 0x8)).ToString("X");
@@ -37,7 +36,7 @@ namespace acnhpoker
 
         public string GetItemCountAddress(int slot)
         {
-            if(slot <= 20)
+            if (slot <= 20)
             {
                 return "0x" + (ItemSlotBase + ((Clamp(slot, 1, 20) - 1) * 0x8) + 0x4).ToString("X");
             }
@@ -47,7 +46,24 @@ namespace acnhpoker
             }
         }
 
-        // Gets slots 1-20 (Inventory bank 1)
+        public byte[] GetInventory(Socket socket)
+        {
+            try
+            {
+                byte[] msg = Encoding.UTF8.GetBytes("peek " + GetItemSlotAddress(1) + " 1024\r\n");
+                Debug.Print("peek " + GetItemSlotAddress(1) + " 1024\r\n");
+                socket.Send(msg);
+
+                byte[] b = new byte[1024];
+                socket.Receive(b);
+                return b;
+            }
+            catch
+            {
+                MessageBox.Show("Exception, try restarting the program or reconnecting to the switch.");
+                return null;
+            }
+        }
         public byte[] GetInventoryBank1(Socket socket)
         {
             try
@@ -78,7 +94,7 @@ namespace acnhpoker
                 Debug.Print("peek " + GetItemSlotAddress(21) + " 314\r\n");
 
                 int first = socket.Send(msg);
-                while(!socket.Poll(-1, SelectMode.SelectRead))
+                while (!socket.Poll(-1, SelectMode.SelectRead))
                 {
                     System.Threading.Thread.Sleep(5);
                 }
@@ -94,20 +110,28 @@ namespace acnhpoker
                 return null;
             }
         }
-
-        public bool SpawnItem(Socket socket, int slot, String value, int amount)
+        public bool SpawnItem(Socket socket, int slot, String value, int amount, string categ)
         {
             try
             {
+
                 byte[] msg = Encoding.UTF8.GetBytes("poke " + GetItemSlotAddress(slot) + " " + FormatItemId(value) + "\r\n");
-                Debug.Print(Encoding.ASCII.GetString(msg));
+                //Debug.Print(Encoding.ASCII.GetString(msg));
 
                 socket.Send(msg);
 
-                if (amount > 1)
+                if (amount != 1 & string.Equals(categ, "Recipes"))
                 {
                     var itemCount = GetItemCountAddress(slot);
-                    byte[] countMsg = Encoding.UTF8.GetBytes("poke " + itemCount + " 0x" + (amount-1).ToString("X") + "\r\n");
+
+                    byte[] countMsg = Encoding.UTF8.GetBytes("poke " + itemCount + " " + FormatItemId((amount).ToString("X")) + "\r\n");
+                    socket.Send(countMsg);
+                }
+                else
+                {
+                    var itemCount = GetItemCountAddress(slot);
+
+                    byte[] countMsg = Encoding.UTF8.GetBytes("poke " + itemCount + " " + (amount - 1).ToString("X") + "\r\n");
                     socket.Send(countMsg);
                 }
             }

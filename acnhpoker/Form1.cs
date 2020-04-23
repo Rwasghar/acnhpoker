@@ -19,14 +19,25 @@ namespace acnhpoker
     {
         Socket s;
         Utilities utilities = new Utilities();
-
+        public string category;
         private Button selectedButton;
         public int selectedSlot = 1;
         public DataGridViewRow lastRow;
-
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case Keys.F2:
+                    this.customIdBtn.PerformClick();
+                    return true;
+                default:
+                    return base.ProcessCmdKey(ref msg, keyData);
+            }
+        }
         public Form1()
         {
             InitializeComponent();
+            ipBox.Text = File.ReadAllText(@"data.txt");
         }
 
         private DataTable loadItemCSV(string filePath)
@@ -50,7 +61,7 @@ namespace acnhpoker
         private void connectBtn_Click(object sender, EventArgs e)
         {
             string ipPattern = @"\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b";
-            
+
             if (!Regex.IsMatch(ipBox.Text, ipPattern))
             {
                 pictureBox1.BackColor = System.Drawing.Color.Red;
@@ -63,7 +74,7 @@ namespace acnhpoker
             IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ipBox.Text), 6000);
 
 
-            if(s.Connected == false)
+            if (s.Connected == false)
             {
                 //really messed up way to do it but yolo
                 new Thread(() =>
@@ -131,10 +142,10 @@ namespace acnhpoker
                 .Where(r => r.Cells["ID"].Value.ToString().Equals(itemID.ToLower()))
                 .FirstOrDefault();
 
-            if(row == null)
+            if (row == null)
             {
                 return ""; //row not found
-            } 
+            }
             else
             {
                 //row found set the index and find the file
@@ -168,7 +179,7 @@ namespace acnhpoker
 
                 int slotId = int.Parse(btn.Tag.ToString());
 
-                if(slotId > 20)
+                if (slotId > 20)
                 {
                     continue;
                 }
@@ -182,7 +193,7 @@ namespace acnhpoker
                 Buffer.BlockCopy(inventoryBytesBank1, slotOffset, slotBytes, 0x0, 0x4);
                 Buffer.BlockCopy(inventoryBytesBank1, countOffset, amountBytes, 0x0, 0x2);
                 string itemID = utilities.UnflipItemId(Encoding.ASCII.GetString(slotBytes));
-                
+
                 //wow i want to gouge my eyeballs out
                 string itemAmountStr = (Convert.ToInt32(Encoding.ASCII.GetString(amountBytes), 16) + 1).ToString();
 
@@ -190,13 +201,13 @@ namespace acnhpoker
 
                 if (itemID == "FFFE")
                     continue;
-               
+
                 string itemPath = getImagePathFromID(itemID);
 
                 if (itemPath == "")
                 {
                     btn.Image = (Image)(new Bitmap(Properties.Resources.ACLeaf.ToBitmap(), new Size(64, 64)));
-                    if(itemAmountStr != "1" || itemAmountStr != "0")
+                    if (itemAmountStr != "1" || itemAmountStr != "0")
                     {
                         btn.Text = itemAmountStr;
                     }
@@ -212,7 +223,6 @@ namespace acnhpoker
                 }
 
             }
-
             foreach (Button btn in this.pnlBank2.Controls.OfType<Button>())
             {
                 if (btn.Tag == null)
@@ -268,6 +278,7 @@ namespace acnhpoker
                 }
 
             }
+
         }
 
 
@@ -281,11 +292,11 @@ namespace acnhpoker
 
             //set the ID row invisible
             itemGridView.Columns["ID"].Visible = false;
-            
+
             //change the width of the first two columns
             itemGridView.Columns[0].Width = 150;
             itemGridView.Columns[1].Width = 65;
-            
+
             //select the full row and change color cause windows blue sux
             itemGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             itemGridView.DefaultCellStyle.BackColor = Color.FromArgb(255, 47, 49, 54);
@@ -320,7 +331,7 @@ namespace acnhpoker
 
             foreach (var b in this.Controls.OfType<Button>())
             {
-                
+
                 b.FlatAppearance.BorderSize = 0;
             }
 
@@ -329,7 +340,7 @@ namespace acnhpoker
             button.FlatAppearance.BorderSize = 1;
             selectedButton = button;
             selectedSlot = int.Parse(button.Tag.ToString());
-            
+
         }
 
         private void customIdBtn_Click(object sender, EventArgs e)
@@ -352,7 +363,7 @@ namespace acnhpoker
                 return;
             }
 
-            utilities.SpawnItem(s, selectedSlot, customIdTextbox.Text, int.Parse(customAmountTxt.Text));
+            utilities.SpawnItem(s, selectedSlot, customIdTextbox.Text, int.Parse(customAmountTxt.Text), category);
 
             string itemPath = getImagePathFromID(customIdTextbox.Text);
 
@@ -381,7 +392,7 @@ namespace acnhpoker
                 e.Handled = true;
             }
 
-            if(customIdTextbox.Text.Length >= 4)
+            if (customIdTextbox.Text.Length >= 4)
             {
                 e.Handled = true;
             }
@@ -389,16 +400,16 @@ namespace acnhpoker
 
         private void customAmountTxt_KeyPress(object sender, KeyPressEventArgs e)
         {
-            char c = e.KeyChar;
-            if (!((c >= '0' && c <= '9')))
-            {
-                e.Handled = true;
-            }
+            //char c = e.KeyChar;
+            //if (!((c >= '0' && c <= '9')))
+            //{
+            //    e.Handled = true;
+            //}
 
-            if (customAmountTxt.Text.Length >= 2)
-            {
-                e.Handled = true;
-            }
+            // if (customAmountTxt.Text.Length >= 2)
+            // {
+            //     e.Handled = true;
+            // }
         }
 
         private void itemSearchBox_TextChanged(object sender, EventArgs e)
@@ -420,11 +431,23 @@ namespace acnhpoker
             {
                 if (e.ColumnIndex == 3)
                 {
-                    string path = @"img\" + itemGridView.Rows[e.RowIndex].Cells[1].Value.ToString() + @"\" + itemGridView.Rows[e.RowIndex].Cells[0].Value.ToString() + ".png";
-                    if(File.Exists(path))
+                    if (string.Equals(itemGridView.Rows[e.RowIndex].Cells[1].Value.ToString(), "Recipes"))
                     {
-                        Image img = Image.FromFile(path);
-                        e.Value = img;
+                        string path = @"img\" + itemGridView.Rows[e.RowIndex].Cells[1].Value.ToString() + @"\" + "Recipes.png";
+                        if (File.Exists(path))
+                        {
+                            Image img = Image.FromFile(path);
+                            e.Value = img;
+                        }
+                    }
+                    else
+                    {
+                        string path = @"img\" + itemGridView.Rows[e.RowIndex].Cells[1].Value.ToString() + @"\" + itemGridView.Rows[e.RowIndex].Cells[0].Value.ToString() + ".png";
+                        if (File.Exists(path))
+                        {
+                            Image img = Image.FromFile(path);
+                            e.Value = img;
+                        }
                     }
 
                 }
@@ -434,7 +457,7 @@ namespace acnhpoker
 
         private void itemSearchBox_Click(object sender, EventArgs e)
         {
-            if(itemSearchBox.Text == "Search")
+            if (itemSearchBox.Text == "Search")
             {
                 itemSearchBox.Text = "";
                 itemSearchBox.ForeColor = Color.White;
@@ -445,7 +468,7 @@ namespace acnhpoker
 
         private void itemGridView_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if(lastRow != null)
+            if (lastRow != null)
             {
                 lastRow.Height = 22;
             }
@@ -453,8 +476,17 @@ namespace acnhpoker
             {
                 lastRow = itemGridView.Rows[e.RowIndex];
                 itemGridView.Rows[e.RowIndex].Height = 160;
-                customIdTextbox.Text = itemGridView.Rows[e.RowIndex].Cells[2].Value.ToString();
-                if(customAmountTxt.Text == "" || customAmountTxt.Text == "0")
+                category = itemGridView.Rows[e.RowIndex].Cells[1].Value.ToString();
+                if (string.Equals(category, "Recipes"))
+                {
+                    customIdTextbox.Text = "16A2";
+                    customAmountTxt.Text = Convert.ToInt32(itemGridView.Rows[e.RowIndex].Cells[2].Value.ToString(), 16).ToString();
+                }
+                else
+                {
+                    customIdTextbox.Text = itemGridView.Rows[e.RowIndex].Cells[2].Value.ToString();
+                }
+                if (customAmountTxt.Text == "" || customAmountTxt.Text == "0")
                 {
                     customAmountTxt.Text = "1";
                 }
@@ -472,6 +504,16 @@ namespace acnhpoker
             flags |= TextFormatFlags.Top | TextFormatFlags.Left;
 
             TextRenderer.DrawText(e.Graphics, b.Text, b.Font, rect, Color.White, Color.Black, flags);
+        }
+
+        private void button40_Click(object sender, EventArgs e)
+        {
+            Invoke((MethodInvoker)delegate { updateInventory(); });
+        }
+
+        private void button40_Click_1(object sender, EventArgs e)
+        {
+            File.WriteAllText(@"data.txt", ipBox.Text);
         }
     }
 }

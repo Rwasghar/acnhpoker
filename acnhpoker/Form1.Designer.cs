@@ -80,6 +80,7 @@
             this.button39 = new System.Windows.Forms.Button();
             this.pnlBank1 = new System.Windows.Forms.Panel();
             this.pnlBank2 = new System.Windows.Forms.Panel();
+            this.button40 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.itemGridView)).BeginInit();
             this.pnlBank1.SuspendLayout();
@@ -521,7 +522,7 @@
             this.ipBox.Name = "ipBox";
             this.ipBox.Size = new System.Drawing.Size(133, 20);
             this.ipBox.TabIndex = 34;
-            this.ipBox.Text = "192.168.254.85";
+            this.ipBox.Text = "";
             // 
             // customAmountTxt
             // 
@@ -953,12 +954,28 @@
             this.pnlBank2.Size = new System.Drawing.Size(812, 164);
             this.pnlBank2.TabIndex = 59;
             // 
+            // button40
+            // 
+            this.button40.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(137)))), ((int)(((byte)(218)))));
+            this.button40.FlatAppearance.BorderSize = 0;
+            this.button40.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button40.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold);
+            this.button40.ForeColor = System.Drawing.Color.White;
+            this.button40.Location = new System.Drawing.Point(236, 11);
+            this.button40.Name = "button40";
+            this.button40.Size = new System.Drawing.Size(63, 23);
+            this.button40.TabIndex = 60;
+            this.button40.Text = "Save";
+            this.button40.UseVisualStyleBackColor = false;
+            this.button40.Click += new System.EventHandler(this.button40_Click_1);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(57)))), ((int)(((byte)(63)))));
             this.ClientSize = new System.Drawing.Size(1190, 516);
+            this.Controls.Add(this.button40);
             this.Controls.Add(this.pnlBank2);
             this.Controls.Add(this.pnlBank1);
             this.Controls.Add(this.label2);
@@ -971,6 +988,8 @@
             this.Controls.Add(this.itemGridView);
             this.Controls.Add(this.connectBtn);
             this.Controls.Add(this.pictureBox1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "ACNH Poker";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -1037,6 +1056,7 @@
         private System.Windows.Forms.Button button39;
         private System.Windows.Forms.Panel pnlBank1;
         private System.Windows.Forms.Panel pnlBank2;
+        private System.Windows.Forms.Button button40;
     }
 }
 
